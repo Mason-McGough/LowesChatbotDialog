@@ -21,6 +21,18 @@ class DialogBot extends ActivityHandler {
         this.dialog = dialog;
         this.dialogState = this.conversationState.createProperty('DialogState');
 
+        this.onMembersAdded(async (context, next ) => {
+            const membersAdded = context.activity.membersAdded;
+            for (let cnt = 0; cnt < membersAdded.length; ++cnt) {
+                if (membersAdded[cnt].id !== context.activity.recipient.id) {
+                    await context.sendActivity('Hi, I am the Frizard! I am here to help you select a new refrigerator. Where would you like to start?');
+
+                    // await this.onDialog(context)
+                }
+            }
+            await next();
+        });
+
         this.onMessage(async (context, next) => {
             console.log('Running dialog with Message Activity.');
 
@@ -36,6 +48,7 @@ class DialogBot extends ActivityHandler {
             await this.userState.saveChanges(context, false);
             await next();
         });
+
     }
 }
 

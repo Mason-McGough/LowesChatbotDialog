@@ -33,7 +33,8 @@ class RefrigeratorDialog extends ComponentDialog {
         this.addDialog(new NumberPrompt(NUMBER_PROMPT, this.agePromptValidator));
 
         this.addDialog(new WaterfallDialog(WATERFALL_DIALOG, [
-            this.warrantyStep.bind(this),
+            this.priceStep.bind(this),
+            this.energyStep.bind(this),
             this.applianceColorStep.bind(this),
             this.depthTypeStep.bind(this),
             this.summaryStep.bind(this)
@@ -58,19 +59,41 @@ class RefrigeratorDialog extends ComponentDialog {
             await dialogContext.beginDialog(this.id);
         }
     }
-
-    async warrantyStep(step) {
+    async priceStep(step) {
         let result = await step.prompt(CHOICE_PROMPT, {
-            prompt: 'What kind of warranty would you like?',
-            choices: ChoiceFactory.toChoices(['90-day', '2-year', '1-year', '30-day', '2-year limited', '1-year limited'])
+            prompt: "Hello, thank you for choosing the Frizard, your personal fridge wizard. \r\n What is your price range for a new fridge?",
+            choices: ChoiceFactory.toChoices(['Less than $500', '$500-$1000', '$1000-$2000', '$2000-$4000', 'More than $4000'])
         });
         console.log(result);
-        console.log(`SELECT * FROM dbo.products WHERE 'warranty' == ${ result }`);
+        console.log(`SELECT * FROM dbo.products WHERE 'price' == ${ result }`);
         return result
     }
+
+    async energyStep(step) {
+        step.values.price = step.result.value;
+        let result = await step.prompt(CHOICE_PROMPT, {
+            prompt: "Would you like your new fridge to be ENERGY STAR certified?",
+            choices: ChoiceFactory.toChoices(['Yes', 'No'])
+        });
+        console.log(result);
+        console.log(`SELECT * FROM dbo.products WHERE 'blank' == ${ result }`);
+        return result
+    }
+
+
+    //save this for later (was deprioritized)
+    // async warrantyStep(step) {
+    //     let result = await step.prompt(CHOICE_PROMPT, {
+    //         prompt: 'What kind of warranty would you like?',
+    //         choices: ChoiceFactory.toChoices(['90-day', '2-year', '1-year', '30-day', '2-year limited', '1-year limited'])
+    //     });
+    //     console.log(result);
+    //     console.log(`SELECT * FROM dbo.products WHERE 'warranty' == ${ result }`);
+    //     return result
+    // }
     
     async applianceColorStep(step) {
-        step.values.warranty = step.result.value;
+        step.values.energyStar = step.result.value;
         let result = await step.prompt(CHOICE_PROMPT, {
             prompt: 'What kind of appliance color / finish would you like?',
             choices: ChoiceFactory.toChoices(['Stainless steel', 'Matte black', 'Bisque/Biscuit', 'Custom panel ready', 'Black stainless steel', 'Bronze', 'Matte white', 'Slate', 'Matte black stainless steel', 'White', 'Stainless look', 'Black', 'Red', 'Black slate'])
@@ -81,6 +104,7 @@ class RefrigeratorDialog extends ComponentDialog {
     }
 
     async depthTypeStep(step) {
+        step.values.color = step.result.value;
         let result = await step.prompt(CHOICE_PROMPT, {
             prompt: 'What kind of depth type would you like?',
             choices: ChoiceFactory.toChoices(['Counter-Depth', 'Standard-Depth'])
@@ -91,17 +115,25 @@ class RefrigeratorDialog extends ComponentDialog {
     }
 
     async summaryStep(step) {
+        step.values.depth = step.result.value;
         if (step.result) {
             // Get the current profile object from user state.
             const userProfile = await this.userProfile.get(step.context, new UserProfile());
 
-            userProfile.warranty = step.values.warranty;
-            console.log(userProfile.warranty);
+            userProfile.price = step.values.price;
+            console.log(userProfile.price);
+            userProfile.energyStar = step.values.energyStar;
+            console.log(userProfile.energyStar);
+            userProfile.color = step.values.color;
+            console.log(userProfile.color);
+            userProfile.depth = step.values.depth;
+            console.log(userProfile.depth);
+
             // userProfile.transport = step.values.transport;
             // userProfile.name = step.values.name;
             // userProfile.age = step.values.age;
 
-            let msg = `I have ${ userProfile.warranty }.`;
+            let msg = `I have ${ userProfile.price } as your price range  \r\n ${ userProfile.color } as your selected color, and ${ userProfile.depth } as your depth. \r\n You said ${ userProfile.energyStar } to Energy Star certification`;
             // let msg = `I have ${ userProfile.transport }, ${ userProfile.name } and ${ userProfile.age }.`;
 
             await step.context.sendActivity(msg);
