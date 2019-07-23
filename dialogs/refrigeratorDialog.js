@@ -108,14 +108,12 @@ class RefrigeratorDialog extends ComponentDialog {
             step.values.energyStar = step.result.value;
             let result = await step.prompt(CHOICE_PROMPT, {
                 prompt: "Would you like your fridge to have built-in water filtration?",
-                choices: ChoiceFactory.toChoices(['Yes', 'No', 'Not Sure'])
+                choices: ChoiceFactory.toChoices(['Yes', 'No', 'What is this?'])
             });
             console.log(result);
             console.log(`SELECT * FROM dbo.products WHERE 'blank' == ${ result }`);
             return result;
-        }
-
-
+            }
 
     //save this for later (was deprioritized)
     // async warrantyStep(step) {
@@ -130,6 +128,7 @@ class RefrigeratorDialog extends ComponentDialog {
     
     async applianceColorStep(step) {
         step.values.filters = step.result.value;
+        
         let result = await step.prompt(CHOICE_PROMPT, {
             prompt: 'What kind of appliance color / finish would you like?',
             choices: ChoiceFactory.toChoices(['Stainless steel', 'Matte black', 'Bisque/Biscuit', 'Custom panel ready', 'Black stainless steel', 'Bronze', 'Matte white', 'Slate', 'Matte black stainless steel', 'White', 'Stainless look', 'Black', 'Red', 'Black slate'])
