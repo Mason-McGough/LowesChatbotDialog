@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-const { ActivityHandler } = require('botbuilder');
+const { ActivityHandler, MessageFactory } = require('botbuilder');
 
 class DialogBot extends ActivityHandler {
     /**
@@ -26,8 +26,7 @@ class DialogBot extends ActivityHandler {
             for (let cnt = 0; cnt < membersAdded.length; ++cnt) {
                 if (membersAdded[cnt].id !== context.activity.recipient.id) {
                     await context.sendActivity('Hi, I am the Frizard! I am here to help you select a new refrigerator. Where would you like to start?');
-
-                    // await this.onDialog(context)
+                    await this.sendSuggestedActions(context)
                 }
             }
             await next();
@@ -50,6 +49,12 @@ class DialogBot extends ActivityHandler {
         });
 
     }
+
+    async sendSuggestedActions(turnContext){
+        var reply = MessageFactory.suggestedActions(['Price', 'Color/Finish', 'Energy Star', 'Warranty', 'Capacity', 'Water Filtration', 'Brand','Not sure where to start'], 'How can I help you today?');
+        await turnContext.sendActivity(reply);
+    }
+
 }
 
 module.exports.DialogBot = DialogBot;

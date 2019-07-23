@@ -49,6 +49,8 @@ class RefrigeratorDialog extends ComponentDialog {
      * @param {*} turnContext
      * @param {*} accessor
      */
+
+    
     async run(turnContext, accessor) {
         const dialogSet = new DialogSet(accessor);
         dialogSet.add(this);
@@ -61,7 +63,7 @@ class RefrigeratorDialog extends ComponentDialog {
     }
     async priceStep(step) {
         let result = await step.prompt(CHOICE_PROMPT, {
-            prompt: "Hello, thank you for choosing the Frizard, your personal fridge wizard. \r\n What is your price range for a new fridge?",
+            prompt: "What is your price range for a new fridge?",
             choices: ChoiceFactory.toChoices(['Less than $500', '$500-$1000', '$1000-$2000', '$2000-$4000', 'More than $4000'])
         });
         console.log(result);
