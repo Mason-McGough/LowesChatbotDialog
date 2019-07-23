@@ -38,6 +38,7 @@ class RefrigeratorDialog extends ComponentDialog {
             this.energyStep.bind(this),
             this.waterFilterStep.bind(this),
             this.applianceColorStep.bind(this),
+            this.applicanceCapacityStep.bind(this),
             this.depthTypeStep.bind(this),
             this.summaryStep.bind(this)
         ]));
@@ -138,8 +139,19 @@ class RefrigeratorDialog extends ComponentDialog {
         return result
     }
 
-    async depthTypeStep(step) {
+    async applicanceCapacityStep(step) {
         step.values.color = step.result.value;
+        let result = await step.prompt(CHOICE_PROMPT, {
+            prompt: 'What capacity range would you like for your fridge?',
+            choices: ChoiceFactory.toChoices(['5-8 cu ft', '8-12 cu ft', '12-16 cu ft', '16-20 cu ft', '20 cu ft +'])
+        });
+        console.log(result);
+        console.log(`SELECT * FROM dbo.products WHERE 'appliancecolorfinish' == ${ result }`);
+        return result
+    }
+
+    async depthTypeStep(step) {
+        step.values.capacity = step.result.value;
         let result = await step.prompt(CHOICE_PROMPT, {
             prompt: 'What kind of depth type would you like?',
             choices: ChoiceFactory.toChoices(['Counter-Depth', 'Standard-Depth'])
@@ -165,12 +177,13 @@ class RefrigeratorDialog extends ComponentDialog {
             console.log(userProfile.filter);
             userProfile.depth = step.values.depth;
             console.log(userProfile.depth);
+            userProfile.capacity = step.values.capacity;
 
             // userProfile.transport = step.values.transport;
             // userProfile.name = step.values.name;
             // userProfile.age = step.values.age;
 
-            let msg = `I have ${ userProfile.price } as your price range  \r\n ${ userProfile.color } as your selected color, and ${ userProfile.depth } as your depth. \r\n You said ${ userProfile.energyStar } to Energy Star certification`;
+            let msg = `I have ${ userProfile.price } as your price range  \r\n ${ userProfile.color } as your selected color, and ${ userProfile.depth } as your depth. \r\n You said ${ userProfile.energyStar } to Energy Star certification. Your chosen capacity is: ${ userProfile.capacity }`;
             // let msg = `I have ${ userProfile.transport }, ${ userProfile.name } and ${ userProfile.age }.`;
 
             await step.context.sendActivity(msg);
