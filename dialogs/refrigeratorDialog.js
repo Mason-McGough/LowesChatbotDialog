@@ -33,6 +33,7 @@ class RefrigeratorDialog extends ComponentDialog {
         this.addDialog(new NumberPrompt(NUMBER_PROMPT, this.agePromptValidator));
 
         this.addDialog(new WaterfallDialog(WATERFALL_DIALOG, [
+            this.welcomeStep.bind(this),
             this.priceStep.bind(this),
             this.energyStep.bind(this),
             this.applianceColorStep.bind(this),
@@ -61,26 +62,47 @@ class RefrigeratorDialog extends ComponentDialog {
             await dialogContext.beginDialog(this.id);
         }
     }
-    async priceStep(step) {
+
+    async welcomeStep(step){
         let result = await step.prompt(CHOICE_PROMPT, {
-            prompt: "What is your price range for a new fridge?",
-            choices: ChoiceFactory.toChoices(['Less than $500', '$500-$1000', '$1000-$2000', '$2000-$4000', 'More than $4000'])
+            prompt: "Hi, I am the Frizard! I am here to help you select a new refrigerator. Where would you like to start?",
+            choices: ChoiceFactory.toChoices(['Price', 'Color/Finish', 'Energy Star', 'Warranty', 'Capacity', 'Water Filtration', 'Brand','Not sure where to start'])
         });
         console.log(result);
         console.log(`SELECT * FROM dbo.products WHERE 'price' == ${ result }`);
-        return result
+        return result 
     }
 
-    async energyStep(step) {
-        step.values.price = step.result.value;
-        let result = await step.prompt(CHOICE_PROMPT, {
-            prompt: "Would you like your new fridge to be ENERGY STAR certified?",
-            choices: ChoiceFactory.toChoices(['Yes', 'No'])
-        });
-        console.log(result);
-        console.log(`SELECT * FROM dbo.products WHERE 'blank' == ${ result }`);
-        return result
-    }
+        async priceStep(step) {
+            step.values.choice = step.result.value;
+            if(step.values.choice == "Price"){
+                let result = await step.prompt(CHOICE_PROMPT, {
+                    prompt: "What is your price range for a new fridge?",
+                    choices: ChoiceFactory.toChoices(['Less than $500', '$500-$1000', '$1000-$2000', '$2000-$4000', 'More than $4000'])
+                });
+                console.log(result);
+                console.log(`SELECT * FROM dbo.products WHERE 'price' == ${ result }`);
+                return result
+                }
+            } 
+            else(){
+                console.log("this thing worked!!");
+                
+                
+            }
+            
+
+
+        async energyStep(step) {
+            step.values.price = step.result.value;
+            let result = await step.prompt(CHOICE_PROMPT, {
+                prompt: "Would you like your new fridge to be ENERGY STAR certified?",
+                choices: ChoiceFactory.toChoices(['Yes', 'No'])
+            });
+            console.log(result);
+            console.log(`SELECT * FROM dbo.products WHERE 'blank' == ${ result }`);
+            return result
+        }
 
 
     //save this for later (was deprioritized)
