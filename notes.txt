@@ -1,0 +1,11 @@
+Actual Width (Inches): Number Prompt (with validator)
+Appliance Color/Finish: Choice Prompt
+Depth Type: Choice Prompt
+Door Style: Choice Prompt
+Freezer Capacity (Cu. Feet): Number Prompt (with validator)
+Ice Maker: Choice Prompt
+Refrigerator Capacity (Cu. Feet): Number prompt (with validator)
+Shelf Options: Choice Prompt
+Warranty: Choice Prompt
+Water Filtration: Choice Prompt
+Price: Number Prompt (with validator)
