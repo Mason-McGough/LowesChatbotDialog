@@ -36,6 +36,7 @@ class RefrigeratorDialog extends ComponentDialog {
             this.welcomeStep.bind(this),
             this.priceStep.bind(this),
             this.energyStep.bind(this),
+            this.waterFilterStep.bind(this),
             this.applianceColorStep.bind(this),
             this.depthTypeStep.bind(this),
             this.summaryStep.bind(this)
@@ -78,7 +79,7 @@ class RefrigeratorDialog extends ComponentDialog {
             if(step.values.choice == "Price"){
                 let result = await step.prompt(CHOICE_PROMPT, {
                     prompt: "What is your price range for a new fridge?",
-                    choices: ChoiceFactory.toChoices(['Less than $500', '$500-$1000', '$1000-$2000', '$2000-$4000', 'More than $4000'])
+                    choices: ChoiceFactory.toChoices(['Less than $500', '$500-$1000', '$1000-$2000', '$2000-$4000', '$400+'])
                 });
                 console.log(result);
                 console.log(`SELECT * FROM dbo.products WHERE 'price' == ${ result }`);
@@ -87,12 +88,10 @@ class RefrigeratorDialog extends ComponentDialog {
             } 
             else(){
                 console.log("this thing worked!!");
-                
+
                 
             }
-            
-
-
+        
         async energyStep(step) {
             step.values.price = step.result.value;
             let result = await step.prompt(CHOICE_PROMPT, {
@@ -104,12 +103,24 @@ class RefrigeratorDialog extends ComponentDialog {
             return result
         }
 
+        async waterFilterStep(step) {
+            step.values.energyStar = step.result.value;
+            let result = await step.prompt(CHOICE_PROMPT, {
+                prompt: "Would you like your fridge to have built-in water filtration?",
+                choices: ChoiceFactory.toChoices(['Yes', 'No', 'Not Sure'])
+            });
+            console.log(result);
+            console.log(`SELECT * FROM dbo.products WHERE 'blank' == ${ result }`);
+            return result;
+        }
+
+
 
     //save this for later (was deprioritized)
     // async warrantyStep(step) {
     //     let result = await step.prompt(CHOICE_PROMPT, {
     //         prompt: 'What kind of warranty would you like?',
-    //         choices: ChoiceFactory.toChoices(['90-day', '2-year', '1-year', '30-day', '2-year limited', '1-year limited'])
+    //         choices: ChoiceFactory.toChoices([ '30-day', '90-day', '2-year', '1-year', '2-year limited', '1-year limited'])
     //     });
     //     console.log(result);
     //     console.log(`SELECT * FROM dbo.products WHERE 'warranty' == ${ result }`);
@@ -117,7 +128,7 @@ class RefrigeratorDialog extends ComponentDialog {
     // }
     
     async applianceColorStep(step) {
-        step.values.energyStar = step.result.value;
+        step.values.filters = step.result.value;
         let result = await step.prompt(CHOICE_PROMPT, {
             prompt: 'What kind of appliance color / finish would you like?',
             choices: ChoiceFactory.toChoices(['Stainless steel', 'Matte black', 'Bisque/Biscuit', 'Custom panel ready', 'Black stainless steel', 'Bronze', 'Matte white', 'Slate', 'Matte black stainless steel', 'White', 'Stainless look', 'Black', 'Red', 'Black slate'])
@@ -150,6 +161,8 @@ class RefrigeratorDialog extends ComponentDialog {
             console.log(userProfile.energyStar);
             userProfile.color = step.values.color;
             console.log(userProfile.color);
+            userProfile.filter = step.values.filters;
+            console.log(userProfile.filter);
             userProfile.depth = step.values.depth;
             console.log(userProfile.depth);
 
