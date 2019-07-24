@@ -13,6 +13,7 @@ const {
     WaterfallDialog
 } = require('botbuilder-dialogs');
 
+//Dependencies for adaptive cards
 const {
     CardFactory
 } = require('botbuilder');
@@ -29,10 +30,12 @@ const WATERFALL_DIALOG = 'WATERFALL_DIALOG';
 
 const REFRIGERATOR_DIALOG = 'refrigeratorDialog';
 
+//Defines adaptive cards
 const TestCard = require('../resources/TestCard.json');
 const TestCard2 = require('../resources/TestCard.json');
 const TestCard3 = require('../resources/TestCard.json');
 
+//Array that holds the adaptive cards
 const CARDS = [
     TestCard,
     TestCard2,
@@ -154,7 +157,7 @@ class RefrigeratorDialog extends ComponentDialog {
         }
 
         if (done || list.length >= this.maxIterations) {
-            this.specsFilterer.filterSpecs(this.specHistory);
+            
 
             await step.context.sendActivities([
                 { type: 'typing' },
@@ -184,6 +187,9 @@ class RefrigeratorDialog extends ComponentDialog {
     }
 
     async endStep(step) {
+        
+        this.specsFilterer.filterSpecs(this.specHistory);
+
         await step.context.sendActivities([
             {  type: 'typing' },
             { type: 'delay', value: 500 },
