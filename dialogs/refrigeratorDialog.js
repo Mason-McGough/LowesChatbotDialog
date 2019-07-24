@@ -54,13 +54,6 @@ class RefrigeratorDialog extends ComponentDialog {
             this.selectionStep.bind(this),
             this.loopStep.bind(this),
             this.getStep.bind(this)
-            // this.priceStep.bind(this),
-            // this.energyStep.bind(this),
-            // this.waterFilterStep.bind(this),
-            // this.applianceColorStep.bind(this),
-            // this.applicanceCapacityStep.bind(this),
-            // this.depthTypeStep.bind(this),
-            // this.summaryStep.bind(this)
         ]));
 
         this.initialDialogId = WATERFALL_DIALOG;
@@ -85,14 +78,6 @@ class RefrigeratorDialog extends ComponentDialog {
         }
     }
 
-    // async welcomeStep(step){
-    //     let result = await step.prompt(CHOICE_PROMPT, {
-    //         prompt: "Hi, I am the Frizard! I am here to help you select a new refrigerator. Where would you like to start?",
-    //         choices: ChoiceFactory.toChoices(this.specsOptions)
-    //     });
-    //     return result 
-    // }
-
     async selectionStep(step) {
         const list = Array.isArray(step.options) ? step.options : [];
         step.values[this.specsSelected] = list;
@@ -104,10 +89,6 @@ class RefrigeratorDialog extends ComponentDialog {
             message = `Anything else? (Choose \`${ this.doneOption }\` to finish.)`;
         }
 
-        // const options = list.length > 0
-        //     ? this.specsOptions.filter(function(item) { return item !== list[0]; })
-        //     : this.specsOptions.slice();
-        // options.push(this.doneOption);
         this.specsOptions = this.specsOptions.filter(item => item !== list[list.length - 1]);
 
         return await step.prompt(CHOICE_PROMPT, {
@@ -147,8 +128,6 @@ class RefrigeratorDialog extends ComponentDialog {
         if (!done) {
             list.push(this.previousSpec);
         }
-        console.log(this.specHistory);
-        console.log(list);
 
         if (done || list.length > 2) {
             // If they're done, exit and return their list.
