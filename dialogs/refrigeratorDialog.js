@@ -13,6 +13,7 @@ const {
     WaterfallDialog
 } = require('botbuilder-dialogs');
 const { UserProfile } = require('../userProfile');
+const { SpecsFilterer } = require('../specsFilterer');
 
 const CHOICE_PROMPT = 'CHOICE_PROMPT';
 const CONFIRM_PROMPT = 'CONFIRM_PROMPT';
@@ -50,6 +51,7 @@ class RefrigeratorDialog extends ComponentDialog {
         ];
         this.specsOptions.push(this.doneOption);
         this.maxIterations = 3;
+        this.specsFilterer = new SpecsFilterer();
 
         this.addDialog(new WaterfallDialog(WATERFALL_DIALOG, [
             this.selectionStep.bind(this),
@@ -137,10 +139,13 @@ class RefrigeratorDialog extends ComponentDialog {
         }
 
         if (done || list.length >= this.maxIterations) {
+            this.specsFilterer.filterSpecs(this.specHistory);
+
             await step.context.sendActivities([
                 { type: 'typing' },
                 { type: 'delay', value: 2500 }
-                ]);
+            ]);
+            
             // If they're done, exit and return their list.
             return await step.prompt(CHOICE_PROMPT, {
                 prompt: 'Thank you. I\'ve got all the info I need to make a recommendation. \r\n Type \"I\'m done\" if you\'re ready for your personalized fridge selection, or type \"Continue\" to pick more features.',
