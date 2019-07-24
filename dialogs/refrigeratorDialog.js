@@ -49,11 +49,13 @@ class RefrigeratorDialog extends ComponentDialog {
             'Help'
         ];
         this.specsOptions.push(this.doneOption);
+        this.maxIterations = 3;
 
         this.addDialog(new WaterfallDialog(WATERFALL_DIALOG, [
             this.selectionStep.bind(this),
             this.loopStep.bind(this),
-            this.getStep.bind(this)
+            this.getStep.bind(this),
+            this.confirmStep.bind(this)
         ]));
 
         this.initialDialogId = WATERFALL_DIALOG;
@@ -129,13 +131,32 @@ class RefrigeratorDialog extends ComponentDialog {
             list.push(this.previousSpec);
         }
 
-        if (done || list.length > 2) {
+        if (done || list.length >= this.maxIterations) {
             // If they're done, exit and return their list.
-            return await this.endStep(step);
+            return await step.prompt(CHOICE_PROMPT, {
+                prompt: 'Thank you. Here are some products I found using the answers you provided. Would you like to continue?',
+                retryPrompt: 'Please choose an option from the list.',
+                choices: ['Continue', 'I\'m done']
+            });
         } else {
             // Otherwise, repeat this dialog, passing in the list from this iteration.
             return await step.replaceDialog(REFRIGERATOR_DIALOG, list);
         }
+    }
+
+    async confirmStep(step) {
+        const list = step.values[this.specsSelected];
+        const choice = step.result.value;
+        if (choice === 'Continue') {
+            return await step.replaceDialog(REFRIGERATOR_DIALOG, list);
+        } else {
+            return await this.endStep(step);
+        }
+    }
+
+    async endStep(step) {
+        step.context.sendActivity('Thanks for coming!');
+        return await step.endDialog();
     }
 
     async priceStep(step) {
@@ -224,11 +245,6 @@ class RefrigeratorDialog extends ComponentDialog {
         }
 
         // WaterfallStep always finishes with the end of the Waterfall or with another dialog, here it is the end.
-        return await step.endDialog();
-    }
-
-    async endStep(step) {
-        await step.context.sendActivity('Thank you. How do these look?');
         return await step.endDialog();
     }
 
