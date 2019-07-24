@@ -86,9 +86,11 @@ class RefrigeratorDialog extends ComponentDialog {
 
         let message = '';
         if (list.length === 0) {
-            message = `Choose an option, or \`${ this.doneOption }\` to finish.`;
+            message = `Great! I know picking a fridge means choosing from a lot of options.
+            \r\n Pick a feature below that matters to you and I'll ask you a few questions to find the perfect fridge for you. 
+            \r\n Or click \`${ this.doneOption }\` to finish.`;
         } else {
-            message = `Anything else? (Choose \`${ this.doneOption }\` to finish.)`;
+            message = `Great! I\'ve got your choice. What else matters to you? (Choose \`${ this.doneOption }\` to finish.)`;
         }
 
         this.specsOptions = this.specsOptions.filter(item => item !== list[list.length - 1]);
@@ -134,7 +136,7 @@ class RefrigeratorDialog extends ComponentDialog {
         if (done || list.length >= this.maxIterations) {
             // If they're done, exit and return their list.
             return await step.prompt(CHOICE_PROMPT, {
-                prompt: 'Thank you. Here are some products I found using the answers you provided. Would you like to continue?',
+                prompt: 'Thank you. I\'ve got all the info I need to make a recommendation. \r\n Type \"I\'m done\" if you\'re ready for your personalizaed fridge selection, or type \"Continue\" to pick more features.',
                 retryPrompt: 'Please choose an option from the list.',
                 choices: ['Continue', 'I\'m done']
             });
@@ -162,7 +164,7 @@ class RefrigeratorDialog extends ComponentDialog {
     async priceStep(step) {
         let result = await step.prompt(CHOICE_PROMPT, {
             prompt: "What is your price range for a new fridge?",
-            choices: ChoiceFactory.toChoices(['Less than $500', '$500-$1000', '$1000-$2000', '$2000-$4000', '$400+'])
+            choices: ChoiceFactory.toChoices(['Less than $500', '$500-$1000', '$1000-$2000', '$2000-$4000', '$4000+'])
         });
         return result
     }

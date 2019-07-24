@@ -11,7 +11,7 @@ class DialogAndWelcomeBot extends DialogBot {
             const membersAdded = context.activity.membersAdded;
             for (let cnt = 0; cnt < membersAdded.length; cnt++) {
                 if (membersAdded[cnt].id !== context.activity.recipient.id) {
-                    const reply = `Hi, I am the Frizard! I am here to help you select a new refrigerator. Type anything to get started:`;
+                    const reply = `Hi, I am the Frizard! \r\n I know that choosing a new fridge can be hard. Luckily, I can help. \r\n Type anything to begin.`;
                     await context.sendActivity(reply);
                 }
             }
