@@ -21,9 +21,11 @@ const NUMBER_PROMPT = 'NUMBER_PROMPT';
 const USER_PROFILE = 'USER_PROFILE';
 const WATERFALL_DIALOG = 'WATERFALL_DIALOG';
 
+const REFRIGERATOR_DIALOG = 'refrigeratorDialog';
+
 class RefrigeratorDialog extends ComponentDialog {
     constructor(userState) {
-        super('refrigeratorDialog');
+        super(REFRIGERATOR_DIALOG);
 
         this.userProfile = userState.createProperty(USER_PROFILE);
 
@@ -32,15 +34,33 @@ class RefrigeratorDialog extends ComponentDialog {
         this.addDialog(new ConfirmPrompt(CONFIRM_PROMPT));
         this.addDialog(new NumberPrompt(NUMBER_PROMPT, this.agePromptValidator));
 
+        this.previousSpec = '';
+        this.specHistory = {};
+        this.doneOption = 'Done';
+        this.specsSelected = 'value-specsSelected';
+        this.specsOptions = [
+            'Price', 
+            'Color/Finish', 
+            'Energy Star', 
+            'Capacity', 
+            'Water Filtration', 
+            'Depth Type',
+            'Warranty',
+            'Help'
+        ];
+        this.specsOptions.push(this.doneOption);
+
         this.addDialog(new WaterfallDialog(WATERFALL_DIALOG, [
-            this.welcomeStep.bind(this),
-            this.priceStep.bind(this),
-            this.energyStep.bind(this),
-            this.waterFilterStep.bind(this),
-            this.applianceColorStep.bind(this),
-            this.applicanceCapacityStep.bind(this),
-            this.depthTypeStep.bind(this),
-            this.summaryStep.bind(this)
+            this.selectionStep.bind(this),
+            this.loopStep.bind(this),
+            this.getStep.bind(this)
+            // this.priceStep.bind(this),
+            // this.energyStep.bind(this),
+            // this.waterFilterStep.bind(this),
+            // this.applianceColorStep.bind(this),
+            // this.applicanceCapacityStep.bind(this),
+            // this.depthTypeStep.bind(this),
+            // this.summaryStep.bind(this)
         ]));
 
         this.initialDialogId = WATERFALL_DIALOG;
@@ -65,103 +85,137 @@ class RefrigeratorDialog extends ComponentDialog {
         }
     }
 
-    async welcomeStep(step){
-        let result = await step.prompt(CHOICE_PROMPT, {
-            prompt: "Hi, I am the Frizard! I am here to help you select a new refrigerator. Where would you like to start?",
-            choices: ChoiceFactory.toChoices(['Price', 'Color/Finish', 'Energy Star', 'Warranty', 'Capacity', 'Water Filtration', 'Brand','Not sure where to start'])
-        });
-        console.log(result);
-        console.log(`SELECT * FROM dbo.products WHERE 'price' == ${ result }`);
-        return result 
-    }
+    // async welcomeStep(step){
+    //     let result = await step.prompt(CHOICE_PROMPT, {
+    //         prompt: "Hi, I am the Frizard! I am here to help you select a new refrigerator. Where would you like to start?",
+    //         choices: ChoiceFactory.toChoices(this.specsOptions)
+    //     });
+    //     return result 
+    // }
 
-        async priceStep(step) {
-            step.values.choice = step.result.value;
-            if(step.values.choice == "Price"){
-                let result = await step.prompt(CHOICE_PROMPT, {
-                    prompt: "What is your price range for a new fridge?",
-                    choices: ChoiceFactory.toChoices(['Less than $500', '$500-$1000', '$1000-$2000', '$2000-$4000', '$400+'])
-                });
-                console.log(result);
-                console.log(`SELECT * FROM dbo.products WHERE 'price' == ${ result }`);
-                return result
-                }
-            } 
-            else(){
-                console.log("this thing worked!!");
+    async selectionStep(step) {
+        const list = Array.isArray(step.options) ? step.options : [];
+        step.values[this.specsSelected] = list;
 
-                
-            }
-        
-        async energyStep(step) {
-            step.values.price = step.result.value;
-            let result = await step.prompt(CHOICE_PROMPT, {
-                prompt: "Would you like your new fridge to be ENERGY STAR certified?",
-                choices: ChoiceFactory.toChoices(['Yes', 'No'])
-            });
-            console.log(result);
-            console.log(`SELECT * FROM dbo.products WHERE 'blank' == ${ result }`);
-            return result
+        let message = '';
+        if (list.length === 0) {
+            message = `Choose an option, or \`${ this.doneOption }\` to finish.`;
+        } else {
+            message = `Anything else? (Choose \`${ this.doneOption }\` to finish.)`;
         }
 
-        async waterFilterStep(step) {
-            step.values.energyStar = step.result.value;
-            let result = await step.prompt(CHOICE_PROMPT, {
-                prompt: "Would you like your fridge to have built-in water filtration?",
-                choices: ChoiceFactory.toChoices(['Yes', 'No', 'What is this?'])
-            });
-            console.log(result);
-            console.log(`SELECT * FROM dbo.products WHERE 'blank' == ${ result }`);
-            return result;
-            }
+        // const options = list.length > 0
+        //     ? this.specsOptions.filter(function(item) { return item !== list[0]; })
+        //     : this.specsOptions.slice();
+        // options.push(this.doneOption);
+        this.specsOptions = this.specsOptions.filter(item => item !== list[list.length - 1]);
 
-    //save this for later (was deprioritized)
-    // async warrantyStep(step) {
-    //     let result = await step.prompt(CHOICE_PROMPT, {
-    //         prompt: 'What kind of warranty would you like?',
-    //         choices: ChoiceFactory.toChoices([ '30-day', '90-day', '2-year', '1-year', '2-year limited', '1-year limited'])
-    //     });
-    //     console.log(result);
-    //     console.log(`SELECT * FROM dbo.products WHERE 'warranty' == ${ result }`);
-    //     return result
-    // }
+        return await step.prompt(CHOICE_PROMPT, {
+            prompt: message,
+            retryPrompt: 'Please choose an option from the list.',
+            choices: this.specsOptions
+        });
+    }
+
+    async loopStep(step) {
+        this.previousSpec = step.result.value;
+        if (this.previousSpec === 'Price') {
+            return await this.priceStep(step);
+        } else if (this.previousSpec === 'Color/Finish') {
+            return await this.applianceColorStep(step);
+        } else if (this.previousSpec === 'Energy Star') {
+            return await this.energyStep(step);
+        } else if (this.previousSpec === 'Water Filtration') {
+            return await this.waterFilterStep(step);
+        } else if (this.previousSpec === 'Capacity') {
+            return await this.applicanceCapacityStep(step);
+        } else if (this.previousSpec === 'Depth Type') {
+            return await this.depthTypeStep(step);
+        } else if (this.previousSpec === 'Warranty') {
+            return await this.warrantyStep(step);
+        } else {
+            console.log('W H A T');
+        }
+    }
+
+    async getStep(step) {
+        const list = step.values[this.specsSelected];
+        const choice = step.result;
+        const done = choice.value === this.doneOption;
+        this.specHistory[this.previousSpec] = choice.value;
+        
+        if (!done) {
+            list.push(this.previousSpec);
+        }
+        console.log(this.specHistory);
+        console.log(list);
+
+        if (done || list.length > 2) {
+            // If they're done, exit and return their list.
+            return await this.endStep(step);
+        } else {
+            // Otherwise, repeat this dialog, passing in the list from this iteration.
+            return await step.replaceDialog(REFRIGERATOR_DIALOG, list);
+        }
+    }
+
+    async priceStep(step) {
+        let result = await step.prompt(CHOICE_PROMPT, {
+            prompt: "What is your price range for a new fridge?",
+            choices: ChoiceFactory.toChoices(['Less than $500', '$500-$1000', '$1000-$2000', '$2000-$4000', '$400+'])
+        });
+        return result
+    }
+    
+    async energyStep(step) {
+        let result = await step.prompt(CHOICE_PROMPT, {
+            prompt: "Would you like your new fridge to be ENERGY STAR certified?",
+            choices: ChoiceFactory.toChoices(['Yes', 'No'])
+        });
+        return result
+    }
+
+    async waterFilterStep(step) {
+        let result = await step.prompt(CHOICE_PROMPT, {
+            prompt: "Would you like your fridge to have built-in water filtration?",
+            choices: ChoiceFactory.toChoices(['Yes', 'No', 'What is this?'])
+        });
+        return result;
+    }
+
+    async warrantyStep(step) {
+        let result = await step.prompt(CHOICE_PROMPT, {
+            prompt: 'What kind of warranty would you like?',
+            choices: ChoiceFactory.toChoices([ '30-day', '90-day', '2-year', '1-year', '2-year limited', '1-year limited'])
+        });
+        return result
+    }
     
     async applianceColorStep(step) {
-        step.values.filters = step.result.value;
-        
         let result = await step.prompt(CHOICE_PROMPT, {
             prompt: 'What kind of appliance color / finish would you like?',
             choices: ChoiceFactory.toChoices(['Stainless steel', 'Matte black', 'Bisque/Biscuit', 'Custom panel ready', 'Black stainless steel', 'Bronze', 'Matte white', 'Slate', 'Matte black stainless steel', 'White', 'Stainless look', 'Black', 'Red', 'Black slate'])
         });
-        console.log(result);
-        console.log(`SELECT * FROM dbo.products WHERE 'appliancecolorfinish' == ${ result }`);
         return result
     }
 
     async applicanceCapacityStep(step) {
-        step.values.color = step.result.value;
         let result = await step.prompt(CHOICE_PROMPT, {
             prompt: 'What capacity range would you like for your fridge?',
             choices: ChoiceFactory.toChoices(['5-8 cu ft', '8-12 cu ft', '12-16 cu ft', '16-20 cu ft', '20 cu ft +'])
         });
-        console.log(result);
-        console.log(`SELECT * FROM dbo.products WHERE 'appliancecolorfinish' == ${ result }`);
         return result
     }
 
     async depthTypeStep(step) {
-        step.values.capacity = step.result.value;
         let result = await step.prompt(CHOICE_PROMPT, {
             prompt: 'What kind of depth type would you like?',
             choices: ChoiceFactory.toChoices(['Counter-Depth', 'Standard-Depth'])
         });
-        console.log(result);
-        console.log(`SELECT * FROM dbo.products WHERE 'depthtype' == ${ result }`);
         return result
     }
 
     async summaryStep(step) {
-        step.values.depth = step.result.value;
         if (step.result) {
             // Get the current profile object from user state.
             const userProfile = await this.userProfile.get(step.context, new UserProfile());
@@ -191,6 +245,11 @@ class RefrigeratorDialog extends ComponentDialog {
         }
 
         // WaterfallStep always finishes with the end of the Waterfall or with another dialog, here it is the end.
+        return await step.endDialog();
+    }
+
+    async endStep(step) {
+        await step.context.sendActivity('Thank you. How do these look?');
         return await step.endDialog();
     }
 
