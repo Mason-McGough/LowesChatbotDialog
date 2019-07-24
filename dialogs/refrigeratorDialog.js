@@ -166,7 +166,7 @@ class RefrigeratorDialog extends ComponentDialog {
     async priceStep(step) {
         let result = await step.prompt(CHOICE_PROMPT, {
             prompt: "What is your price range for a new fridge?",
-            choices: ChoiceFactory.toChoices(['Less than $500', '$500-$1000', '$1000-$2000', '$2000-$4000', '$400+'])
+            choices: ChoiceFactory.toChoices(['Less than $500', '$500-$1000', '$1000-$2000', '$2000-$4000', '$4000+'])
         });
         return result
     }
