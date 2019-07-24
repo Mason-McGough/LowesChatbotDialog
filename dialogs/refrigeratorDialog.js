@@ -197,63 +197,107 @@ class RefrigeratorDialog extends ComponentDialog {
         step.context.sendActivity('Thanks for coming!');
         var myCard = this.createACard(this.specsFilterer.selectedProducts[0]);
         step.context.sendActivity({
-            text: 'Here is an Adaptive Card:',
+            text: 'Here is your recommended refrigerator:',
             attachments: [CardFactory.adaptiveCard(myCard)]
         });
         return await step.endDialog();
     }
 
     createACard(product) {
-        return {
-            "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-            "type": "AdaptiveCard",
-            "version": "1.0",
-            "body": [
-              {
-                "speak": "This is a demo.",
+         return {
+    //         "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    //         "type": "AdaptiveCard",
+    //         "version": "1.0",
+    //         "body": [
+    //           {
+    //             "speak": "This is a demo.",
+    //             "type": "ColumnSet",
+    //             "columns": [
+    //               {
+    //                 "type": "Column",
+    //                 "width": 2,
+    //                 "items": [
+    //                   {
+    //                     "type": "TextBlock",
+    //                     "text": product.title,
+    //                     "weight": "bolder",
+    //                     "size": "extraLarge",
+    //                     "spacing": "none"
+    //                   },
+    //                   {
+    //                     "type": "TextBlock",
+    //                     "text": product.price,
+    //                     "size": "small",
+    //                     "wrap": true
+    //                   }
+    //                 ]
+    //               },
+    //               {
+    //                 "type": "Column",
+    //                 "width": 1,
+    //                 "items": [
+    //                   {
+    //                     "type": "Image",
+    //                     "url": product.img_url,
+    //                     "size": "auto"
+    //                   }
+    //                 ]
+    //               }
+    //             ]
+    //           }
+    //         ],
+    //         "actions": [
+    //           {
+    //             "type": "Action.OpenUrl",
+    //             "title": "More Info",
+    //             "url": product.url
+    //           }
+    //         ]
+    //       }
+    
+    
+        "type": "AdaptiveCard",
+        "version": "1.0",
+        "body": [
+            {
                 "type": "ColumnSet",
                 "columns": [
-                  {
-                    "type": "Column",
-                    "width": 2,
-                    "items": [
-                      {
-                        "type": "TextBlock",
-                        "text": product.title,
-                        "weight": "bolder",
-                        "size": "extraLarge",
-                        "spacing": "none"
-                      },
-                      {
-                        "type": "TextBlock",
-                        "text": product.price,
-                        "size": "small",
-                        "wrap": true
-                      }
-                    ]
-                  },
-                  {
-                    "type": "Column",
-                    "width": 1,
-                    "items": [
-                      {
-                        "type": "Image",
-                        "url": product.img_url,
-                        "size": "auto"
-                      }
-                    ]
-                  }
+                    {
+                        "type": "Column",
+                        "width": 2,
+                        "items": [
+                            {
+                                "type": "TextBlock",
+                                "weight": "bolder",
+                                "text": product.title
+                                
+                            },
+                            {
+                                "type": "TextBlock",
+                                "text": `$ ${product.price}`
+                            },
+                            {
+                                "type": "TextBlock",
+                                "text": product.url
+                            }
+                        ]
+                    },
+                    {
+                        "type": "Column",
+                        "width": 2,
+                        "items": [
+                            {
+                                "type": "Image",
+                                "url": product.img_url
+                            }
+                        ]
+                    }
                 ]
-              }
-            ],
-            "actions": [
-              {
-                "type": "Action.OpenUrl",
-                "title": "More Info",
-                "url": product.url
-              }
-            ]
-          }
+            }
+        ],
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json"
+    }
+    
     }
 
     async priceStep(step) {
