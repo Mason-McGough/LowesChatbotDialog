@@ -12,6 +12,11 @@ const {
     TextPrompt,
     WaterfallDialog
 } = require('botbuilder-dialogs');
+
+const {
+    CardFactory
+} = require('botbuilder');
+
 const { UserProfile } = require('../userProfile');
 
 const CHOICE_PROMPT = 'CHOICE_PROMPT';
@@ -22,6 +27,16 @@ const USER_PROFILE = 'USER_PROFILE';
 const WATERFALL_DIALOG = 'WATERFALL_DIALOG';
 
 const REFRIGERATOR_DIALOG = 'refrigeratorDialog';
+
+const TestCard = require('../resources/TestCard.json');
+const TestCard2 = require('../resources/TestCard.json');
+const TestCard3 = require('../resources/TestCard.json');
+
+const CARDS = [
+    TestCard,
+    TestCard2,
+    TestCard3
+];
 
 class RefrigeratorDialog extends ComponentDialog {
     constructor(userState) {
@@ -171,7 +186,11 @@ class RefrigeratorDialog extends ComponentDialog {
             { type: 'typing' },
             { type: 'delay', value: 4000 },
             ]);
-        step.context.sendActivity('Thanks for coming!');
+        //step.context.sendActivity('Thanks for coming!');
+        step.context.sendActivity({
+            text: 'Here is an Adaptive Card:',
+            attachments: [CardFactory.adaptiveCard(CARDS[1])]
+        });
         return await step.endDialog();
     }
 
