@@ -157,8 +157,6 @@ class RefrigeratorDialog extends ComponentDialog {
         }
 
         if (done || list.length >= this.maxIterations) {
-            
-
             await step.context.sendActivities([
                 { type: 'typing' },
                 { type: 'delay', value: 2500 }
@@ -187,7 +185,6 @@ class RefrigeratorDialog extends ComponentDialog {
     }
 
     async endStep(step) {
-        
         this.specsFilterer.filterSpecs(this.specHistory);
 
         await step.context.sendActivities([
@@ -197,12 +194,66 @@ class RefrigeratorDialog extends ComponentDialog {
             { type: 'typing' },
             { type: 'delay', value: 4000 },
             ]);
-        //step.context.sendActivity('Thanks for coming!');
+        step.context.sendActivity('Thanks for coming!');
+        var myCard = this.createACard(this.specsFilterer.selectedProducts[0]);
         step.context.sendActivity({
             text: 'Here is an Adaptive Card:',
-            attachments: [CardFactory.adaptiveCard(CARDS[1])]
+            attachments: [CardFactory.adaptiveCard(myCard)]
         });
         return await step.endDialog();
+    }
+
+    createACard(product) {
+        return {
+            "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+            "type": "AdaptiveCard",
+            "version": "1.0",
+            "body": [
+              {
+                "speak": "This is a demo.",
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": 2,
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": product.title,
+                        "weight": "bolder",
+                        "size": "extraLarge",
+                        "spacing": "none"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": product.price,
+                        "size": "small",
+                        "wrap": true
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": 1,
+                    "items": [
+                      {
+                        "type": "Image",
+                        "url": product.img_url,
+                        "size": "auto"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "actions": [
+              {
+                "type": "Action.OpenUrl",
+                "title": "More Info",
+                "url": product.url
+              }
+            ]
+          }
     }
 
     async priceStep(step) {
