@@ -8,7 +8,8 @@ const path = require('path');
 const { BotFrameworkAdapter, ConversationState, MemoryStorage, UserState } = require('botbuilder');
 
 // Import our custom bot class that provides a turn handling function.
-const { DialogBot } = require('./bots/dialogBot');
+// const { DialogBot } = require('./bots/dialogBot');
+const { DialogAndWelcomeBot } = require('./bots/dialogAndWelcomeBot');
 const { RefrigeratorDialog } = require('./dialogs/refrigeratorDialog');
 
 // Read environment variables from .env file
@@ -43,7 +44,8 @@ const userState = new UserState(memoryStorage);
 
 // Create the main dialog.
 const dialog = new RefrigeratorDialog(userState);
-const bot = new DialogBot(conversationState, userState, dialog);
+const bot = new DialogAndWelcomeBot(conversationState, userState, dialog);
+// const bot = new DialogBot(conversationState, userState, dialog);
 
 // Create HTTP server.
 const server = restify.createServer();
