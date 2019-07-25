@@ -12,7 +12,11 @@ class SpecsFilterer {
 
     async filterSpecs(specs) {
         var indices = this.getFilterIndices(specs);
-        var uniqueIndices = new Set([].concat.apply([], indices));
+
+        var uniqueIndices = indices[0];
+        for (var i=1; i < indices.length; i++) {
+            uniqueIndices = uniqueIndices.filter(x => indices[i].includes(x));
+        }
     
         var filteredProducts = Array.from(uniqueIndices, i => this.products[i]);
 
@@ -36,7 +40,7 @@ class SpecsFilterer {
                     filters.push(this.filterEnergyStar(value));
                     break;
                 case 'Capacity':
-                    filters.push(this.filterCapacity(value));
+                    filters.push(this.filterFreezerCapacity(value));
                     break;
                 case 'Water Filtration':
                     filters.push(this.filterWaterFiltration(value));
@@ -78,8 +82,9 @@ class SpecsFilterer {
     filterColorFinish(value) {
         var indexes = []
         for (let i=0; i < this.products.length; i++) {
-            let prodValue = this.products[i]['Price'];
+            let prodValue = this.products[i]['appliancecolorfinish'];
             
+            indexes.push(i);
         }
 
         return indexes;
@@ -88,7 +93,7 @@ class SpecsFilterer {
     filterEnergyStar(value) {
         var indexes = []
         for (let i=0; i < this.products.length; i++) {
-            let prodValue = this.products[i]['Price'];
+            let prodValue = this.products[i]['energystarcertified'];
             if (value === 'Yes' && prodValue == value) {
                 indexes.push(i);
             } else if (value === 'No' && prodValue == value) {
@@ -99,10 +104,12 @@ class SpecsFilterer {
         return indexes;
     }
 
-    filterCapacity(value) {
+    filterFreezerCapacity(value) {
         var indexes = []
         for (let i=0; i < this.products.length; i++) {
-            let prodValue = this.products[i]['Price'];
+            let prodValue = this.products[i]['freezercapacitycufeet'];
+
+            indexes.push(i);
         }
 
         return indexes;
@@ -111,7 +118,9 @@ class SpecsFilterer {
     filterWaterFiltration(value) {
         var indexes = []
         for (let i=0; i < this.products.length; i++) {
-            let prodValue = this.products[i]['Price'];
+            let prodValue = this.products[i]['waterfiltration'];
+
+            indexes.push(i);
         }
 
         return indexes;
@@ -120,7 +129,9 @@ class SpecsFilterer {
     filterDepthType(value) {
         var indexes = []
         for (let i=0; i < this.products.length; i++) {
-            let prodValue = this.products[i]['Price'];
+            let prodValue = this.products[i]['depthtype'];
+
+            indexes.push(i);
         }
 
         return indexes;
@@ -129,7 +140,9 @@ class SpecsFilterer {
     filterWarranty(value) {
         var indexes = []
         for (let i=0; i < this.products.length; i++) {
-            let prodValue = this.products[i]['Price'];
+            let prodValue = this.products[i]['warranty'];
+
+            indexes.push(i);
         }
 
         return indexes;

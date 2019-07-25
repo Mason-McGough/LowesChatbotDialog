@@ -190,114 +190,66 @@ class RefrigeratorDialog extends ComponentDialog {
         await step.context.sendActivities([
             {  type: 'typing' },
             { type: 'delay', value: 500 },
-            { type: 'message', text: 'beep...boop, now finding your perfect frigid friend...' },
+            { type: 'message', text: 'Beep boop... now finding your perfect frigid friend...' },
             { type: 'typing' },
             { type: 'delay', value: 4000 },
-            ]);
+        ]);
         step.context.sendActivity('Thanks for coming!');
-        var myCard = this.createACard(this.specsFilterer.selectedProducts[0]);
-        step.context.sendActivity({
-            text: 'Here is your recommended refrigerator:',
-            attachments: [CardFactory.adaptiveCard(myCard)]
-        });
+        if (this.specsFilterer.selectedProducts.length > 0) {
+            var myCard = this.createACard(this.specsFilterer.selectedProducts[0]);
+            step.context.sendActivity({
+                text: 'Here is your recommended refrigerator:',
+                attachments: [CardFactory.adaptiveCard(myCard)]
+            });
+        } else {
+            step.context.sendActivity('Sorry, but no products matched your query.');
+        }
         return await step.endDialog();
     }
 
     createACard(product) {
-         return {
-    //         "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-    //         "type": "AdaptiveCard",
-    //         "version": "1.0",
-    //         "body": [
-    //           {
-    //             "speak": "This is a demo.",
-    //             "type": "ColumnSet",
-    //             "columns": [
-    //               {
-    //                 "type": "Column",
-    //                 "width": 2,
-    //                 "items": [
-    //                   {
-    //                     "type": "TextBlock",
-    //                     "text": product.title,
-    //                     "weight": "bolder",
-    //                     "size": "extraLarge",
-    //                     "spacing": "none"
-    //                   },
-    //                   {
-    //                     "type": "TextBlock",
-    //                     "text": product.price,
-    //                     "size": "small",
-    //                     "wrap": true
-    //                   }
-    //                 ]
-    //               },
-    //               {
-    //                 "type": "Column",
-    //                 "width": 1,
-    //                 "items": [
-    //                   {
-    //                     "type": "Image",
-    //                     "url": product.img_url,
-    //                     "size": "auto"
-    //                   }
-    //                 ]
-    //               }
-    //             ]
-    //           }
-    //         ],
-    //         "actions": [
-    //           {
-    //             "type": "Action.OpenUrl",
-    //             "title": "More Info",
-    //             "url": product.url
-    //           }
-    //         ]
-    //       }
-    
-    
-        "type": "AdaptiveCard",
-        "version": "1.0",
-        "body": [
-            {
-                "type": "ColumnSet",
-                "columns": [
-                    {
-                        "type": "Column",
-                        "width": 2,
-                        "items": [
-                            {
-                                "type": "TextBlock",
-                                "weight": "bolder",
-                                "text": product.title
-                                
-                            },
-                            {
-                                "type": "TextBlock",
-                                "text": `$ ${product.price}`
-                            },
-                            {
-                                "type": "TextBlock",
-                                "text": product.url
-                            }
-                        ]
-                    },
-                    {
-                        "type": "Column",
-                        "width": 2,
-                        "items": [
-                            {
-                                "type": "Image",
-                                "url": product.img_url
-                            }
-                        ]
-                    }
-                ]
-            }
-        ],
-        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json"
-    }
-    
+         return {    
+            "type": "AdaptiveCard",
+            "version": "1.0",
+            "body": [
+                {
+                    "type": "ColumnSet",
+                    "columns": [
+                        {
+                            "type": "Column",
+                            "width": 2,
+                            "items": [
+                                {
+                                    "type": "TextBlock",
+                                    "weight": "bolder",
+                                    "text": product.title
+                                    
+                                },
+                                {
+                                    "type": "TextBlock",
+                                    "text": `$ ${product.price}`
+                                },
+                                {
+                                    "type": "TextBlock",
+                                    "text": product.url
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Column",
+                            "width": 2,
+                            "items": [
+                                {
+                                    "type": "Image",
+                                    "url": product.img_url
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "$schema": "http://adaptivecards.io/schemas/adaptive-card.json"
+        }
     }
 
     async priceStep(step) {
