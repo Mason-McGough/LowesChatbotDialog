@@ -55,6 +55,7 @@ class RefrigeratorDialog extends ComponentDialog {
 
         this.previousSpec = '';
         this.specHistory = {};
+        this.done = false;
         this.doneOption = 'Done';
         this.specsSelected = 'value-specsSelected';
         this.specsOptions = [
@@ -64,11 +65,10 @@ class RefrigeratorDialog extends ComponentDialog {
             'Capacity', 
             'Water Filtration', 
             'Depth Type',
-            'Warranty',
-            'Help'
+            'Warranty'
         ];
-        this.specsOptions.push(this.doneOption);
-        this.maxIterations = 3;
+        // this.specsOptions.push(this.doneOption);
+        this.maxIterations = 2;
         this.specsFilterer = new SpecsFilterer();
 
         this.addDialog(new WaterfallDialog(WATERFALL_DIALOG, [
@@ -126,21 +126,28 @@ class RefrigeratorDialog extends ComponentDialog {
     }
 
     async loopStep(step) {
-        this.previousSpec = step.result.value;
-        if (this.previousSpec === 'Price') {
+        var result = step.result.value
+        if (result !== this.doneOption) {
+            this.previousSpec = result;
+        } 
+        
+        if (result === 'Price') {
             return await this.priceStep(step);
-        } else if (this.previousSpec === 'Color/Finish') {
+        } else if (result === 'Color/Finish') {
             return await this.applianceColorStep(step);
-        } else if (this.previousSpec === 'Energy Star') {
+        } else if (result === 'Energy Star') {
             return await this.energyStep(step);
-        } else if (this.previousSpec === 'Water Filtration') {
+        } else if (result === 'Water Filtration') {
             return await this.waterFilterStep(step);
-        } else if (this.previousSpec === 'Capacity') {
+        } else if (result === 'Capacity') {
             return await this.applicanceCapacityStep(step);
-        } else if (this.previousSpec === 'Depth Type') {
+        } else if (result === 'Depth Type') {
             return await this.depthTypeStep(step);
-        } else if (this.previousSpec === 'Warranty') {
+        } else if (result === 'Warranty') {
             return await this.warrantyStep(step);
+        } else if (result === this.doneOption) {
+            this.done = true;
+            return await this.getStep(step);
         } else {
             console.log('W H A T');
         }
@@ -149,14 +156,15 @@ class RefrigeratorDialog extends ComponentDialog {
     async getStep(step) {
         const list = step.values[this.specsSelected];
         const choice = step.result;
-        const done = choice.value === this.doneOption;
+        // this.done = choice.value === this.doneOption;
+
         this.specHistory[this.previousSpec] = choice.value;
         
-        if (!done) {
+        if (!this.done) {
             list.push(this.previousSpec);
         }
 
-        if (done || list.length >= this.maxIterations) {
+        if (this.done || list.length >= this.maxIterations) {
             await step.context.sendActivities([
                 { type: 'typing' },
                 { type: 'delay', value: 2500 }
@@ -166,7 +174,7 @@ class RefrigeratorDialog extends ComponentDialog {
             return await step.prompt(CHOICE_PROMPT, {
                 prompt: 'Thank you. I\'ve got all the info I need to make a recommendation. \r\n Type \"I\'m done\" if you\'re ready for your personalized fridge selection, or type \"Continue\" to pick more features.',
                 retryPrompt: 'Please choose an option from the list.',
-                choices: ['Continue', 'I\'m done']
+                choices: ['Continue', this.doneOption]
             });
         } else {
             // Otherwise, repeat this dialog, passing in the list from this iteration.
@@ -178,8 +186,10 @@ class RefrigeratorDialog extends ComponentDialog {
         const list = step.values[this.specsSelected];
         const choice = step.result.value;
         if (choice === 'Continue') {
+            this.done = false;
             return await step.replaceDialog(REFRIGERATOR_DIALOG, list);
         } else {
+            this.done = true;
             return await this.endStep(step);
         }
     }
@@ -195,8 +205,11 @@ class RefrigeratorDialog extends ComponentDialog {
             { type: 'delay', value: 4000 },
         ]);
         step.context.sendActivity('Thanks for coming!');
+        console.log(this.specHistory);
         if (this.specsFilterer.selectedProducts.length > 0) {
-            var myCard = this.createACard(this.specsFilterer.selectedProducts[0]);
+            var selectedProduct = this.specsFilterer.selectedProducts[0];
+            console.log(selectedProduct);
+            var myCard = this.createACard(selectedProduct);
             step.context.sendActivity({
                 text: 'Here is your recommended refrigerator:',
                 attachments: [CardFactory.adaptiveCard(myCard)]

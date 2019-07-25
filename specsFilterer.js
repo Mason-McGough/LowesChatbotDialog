@@ -79,12 +79,39 @@ class SpecsFilterer {
         return indexes;
     }
 
-    filterColorFinish(value) {
+    filterColorFinish(choice) {
         var indexes = []
         for (let i=0; i < this.products.length; i++) {
             let prodValue = this.products[i]['appliancecolorfinish'];
-            
-            indexes.push(i);
+            if (choice === 'Stainless steel' && prodValue == choice) {
+                indexes.push(i);
+            } else if (choice === 'Matte black' && prodValue == choice) {
+                indexes.push(i);
+            } else if (choice === 'Bisque/Biscuit' && prodValue == choice) {
+                indexes.push(i);
+            } else if (choice === 'Custom panel ready' && prodValue == choice) {
+                indexes.push(i);
+            } else if (choice === 'Black stainless steel' && prodValue == choice) {
+                indexes.push(i);
+            } else if (choice === 'Bronze' && prodValue == choice) {
+                indexes.push(i);
+            } else if (choice === 'Matte white' && prodValue == choice) {
+                indexes.push(i);
+            } else if (choice === 'Slate' && prodValue == choice) {
+                indexes.push(i);
+            } else if (choice === 'Matte black stainless steel' && prodValue == choice) {
+                indexes.push(i);
+            } else if (choice === 'White' && prodValue == choice) {
+                indexes.push(i);
+            } else if (choice === 'Stainless look' && prodValue == choice) {
+                indexes.push(i);
+            } else if (choice === 'Black' && prodValue == choice) {
+                indexes.push(i);
+            } else if (choice === 'Red' && prodValue == choice) {
+                indexes.push(i);
+            } else if (choice === 'Black slate' && prodValue == choice) {
+                indexes.push(i);
+            }
         }
 
         return indexes;
@@ -119,8 +146,11 @@ class SpecsFilterer {
         var indexes = []
         for (let i=0; i < this.products.length; i++) {
             let prodValue = this.products[i]['waterfiltration'];
-
-            indexes.push(i);
+            if (value === 'Yes' && prodValue == value) {
+                indexes.push(i);
+            } else if (value === 'No' && prodValue == value) {
+                indexes.push(i);
+            }
         }
 
         return indexes;
