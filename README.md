@@ -1,5 +1,7 @@
 # Fridge Wizard: Product Recommendation ChatBot
 
+NOTE: Further work on this project has been migrated to a private repository.
+
 ## Overview
 
 This project was developed at the Microsoft Hackathon 2019 by Lowe's and Lowe's Innovation Labs.
