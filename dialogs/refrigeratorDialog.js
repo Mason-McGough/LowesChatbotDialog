@@ -18,46 +18,23 @@ const {
     CardFactory
 } = require('botbuilder');
 
-const { UserProfile } = require('../userProfile');
 const { SpecsFilterer } = require('../specsFilterer');
 
 const CHOICE_PROMPT = 'CHOICE_PROMPT';
 const CONFIRM_PROMPT = 'CONFIRM_PROMPT';
-const NAME_PROMPT = 'NAME_PROMPT';
-const NUMBER_PROMPT = 'NUMBER_PROMPT';
-const USER_PROFILE = 'USER_PROFILE';
 const WATERFALL_DIALOG = 'WATERFALL_DIALOG';
 
 const REFRIGERATOR_DIALOG = 'refrigeratorDialog';
 
-//Defines adaptive cards
-const TestCard = require('../resources/TestCard.json');
-const TestCard2 = require('../resources/TestCard.json');
-const TestCard3 = require('../resources/TestCard.json');
-
-//Array that holds the adaptive cards
-const CARDS = [
-    TestCard,
-    TestCard2,
-    TestCard3
-];
-
 class RefrigeratorDialog extends ComponentDialog {
     constructor(userState) {
         super(REFRIGERATOR_DIALOG);
-
-        this.userProfile = userState.createProperty(USER_PROFILE);
-
-        this.addDialog(new TextPrompt(NAME_PROMPT));
         this.addDialog(new ChoicePrompt(CHOICE_PROMPT));
         this.addDialog(new ConfirmPrompt(CONFIRM_PROMPT));
-        this.addDialog(new NumberPrompt(NUMBER_PROMPT, this.agePromptValidator));
 
-        this.previousSpec = '';
-        this.specHistory = {};
-        this.done = false;
+        this.continueOption = 'Continue';
         this.doneOption = 'Done';
-        this.specsSelected = 'value-specsSelected';
+        this.helpOption = 'Help';
         this.specsOptions = [
             'Price', 
             'Color/Finish', 
@@ -67,8 +44,10 @@ class RefrigeratorDialog extends ComponentDialog {
             'Depth Type',
             'Warranty'
         ];
-        // this.specsOptions.push(this.doneOption);
         this.maxIterations = 2;
+
+        this.previousSpec = '';
+        this.done = false;
         this.specsFilterer = new SpecsFilterer();
 
         this.addDialog(new WaterfallDialog(WATERFALL_DIALOG, [
@@ -79,6 +58,8 @@ class RefrigeratorDialog extends ComponentDialog {
         ]));
 
         this.initialDialogId = WATERFALL_DIALOG;
+
+        this.reset();
     }
 
     /**
@@ -100,28 +81,36 @@ class RefrigeratorDialog extends ComponentDialog {
         }
     }
 
+    async reset() {
+        this.availableOptions = this.specsOptions.slice();
+        this.specHistory = {};
+        this.done = false;
+    }
+
     async selectionStep(step) {
-        const list = Array.isArray(step.options) ? step.options : [];
-        step.values[this.specsSelected] = list;
+        if (this.done) {
+            this.reset();
+        }
+
+        const list = Object.keys(this.specHistory);
 
         let message = '';
         if (list.length === 0) {
-            message = `Great! I know picking a fridge means choosing from a lot of options.
-            \r\n Pick a feature below that matters to you and I'll ask you a few questions to find the perfect fridge for you. 
-            \r\n Or click \`${ this.doneOption }\` to finish.`;
+            message = `Great! Finding the right refrigerator can be difficult. I can help with that.
+            \r\n Pick a feature below that matters to you and I'll ask you a few questions to find the perfect fridge for you.`;
         } else {
             await step.context.sendActivities([
                 { type: 'typing' },
                 { type: 'delay', value: 2000 }
                 ]);
-            message = `Great! I\'ve got your choice. What else matters to you? (Choose \`${ this.doneOption }\` to finish.)`;
+            message = `Great choice! What else matters to you?`;
         }
 
-        this.specsOptions = this.specsOptions.filter(item => item !== list[list.length - 1]);
+        this.availableOptions = this.availableOptions.filter(item => item !== list[list.length - 1]);
         return await step.prompt(CHOICE_PROMPT, {
             prompt: message,
             retryPrompt: 'Please choose an option from the list.',
-            choices: this.specsOptions
+            choices: this.availableOptions
         });
     }
 
@@ -154,9 +143,8 @@ class RefrigeratorDialog extends ComponentDialog {
     }
 
     async getStep(step) {
-        const list = step.values[this.specsSelected];
+        const list = Object.keys(this.specHistory);
         const choice = step.result;
-        // this.done = choice.value === this.doneOption;
 
         this.specHistory[this.previousSpec] = choice.value;
         
@@ -172,9 +160,9 @@ class RefrigeratorDialog extends ComponentDialog {
             
             // If they're done, exit and return their list.
             return await step.prompt(CHOICE_PROMPT, {
-                prompt: 'Thank you. I\'ve got all the info I need to make a recommendation. \r\n Type \"I\'m done\" if you\'re ready for your personalized fridge selection, or type \"Continue\" to pick more features.',
+                prompt: `Thank you. I\'ve got all the info I need to make a recommendation. \r\n Select "${this.doneOption}" if you\'re ready for your personalized fridge selection or "${this.continueOption}" to pick more features.`,
                 retryPrompt: 'Please choose an option from the list.',
-                choices: ['Continue', this.doneOption]
+                choices: [this.continueOption, this.doneOption]
             });
         } else {
             // Otherwise, repeat this dialog, passing in the list from this iteration.
@@ -183,9 +171,9 @@ class RefrigeratorDialog extends ComponentDialog {
     }
 
     async confirmStep(step) {
-        const list = step.values[this.specsSelected];
+        const list = Object.keys(this.specHistory);
         const choice = step.result.value;
-        if (choice === 'Continue') {
+        if (choice === this.continueOption) {
             this.done = false;
             return await step.replaceDialog(REFRIGERATOR_DIALOG, list);
         } else {
@@ -204,14 +192,13 @@ class RefrigeratorDialog extends ComponentDialog {
             { type: 'typing' },
             { type: 'delay', value: 4000 },
         ]);
-        step.context.sendActivity('Thanks for coming!');
+
         console.log(this.specHistory);
         if (this.specsFilterer.selectedProducts.length > 0) {
             var selectedProduct = this.specsFilterer.selectedProducts[0];
-            console.log(selectedProduct);
             var myCard = this.createACard(selectedProduct);
             step.context.sendActivity({
-                text: 'Here is your recommended refrigerator:',
+                text: 'Thanks for coming! Here is your recommended refrigerator:',
                 attachments: [CardFactory.adaptiveCard(myCard)]
             });
         } else {
@@ -319,44 +306,6 @@ class RefrigeratorDialog extends ComponentDialog {
             choices: ChoiceFactory.toChoices(['Counter-Depth', 'Standard-Depth'])
         });
         return result
-    }
-
-    async summaryStep(step) {
-        if (step.result) {
-            // Get the current profile object from user state.
-            const userProfile = await this.userProfile.get(step.context, new UserProfile());
-
-            userProfile.price = step.values.price;
-            console.log(userProfile.price);
-            userProfile.energyStar = step.values.energyStar;
-            console.log(userProfile.energyStar);
-            userProfile.color = step.values.color;
-            console.log(userProfile.color);
-            userProfile.filter = step.values.filters;
-            console.log(userProfile.filter);
-            userProfile.depth = step.values.depth;
-            console.log(userProfile.depth);
-            userProfile.capacity = step.values.capacity;
-
-            // userProfile.transport = step.values.transport;
-            // userProfile.name = step.values.name;
-            // userProfile.age = step.values.age;
-
-            let msg = `I have ${ userProfile.price } as your price range  \r\n ${ userProfile.color } as your selected color, and ${ userProfile.depth } as your depth. \r\n You said ${ userProfile.energyStar } to Energy Star certification. Your chosen capacity is: ${ userProfile.capacity }`;
-            // let msg = `I have ${ userProfile.transport }, ${ userProfile.name } and ${ userProfile.age }.`;
-
-            await step.context.sendActivity(msg);
-        } else {
-            await step.context.sendActivity('Thanks. Your profile will not be kept.');
-        }
-
-        // WaterfallStep always finishes with the end of the Waterfall or with another dialog, here it is the end.
-        return await step.endDialog();
-    }
-
-    async agePromptValidator(promptContext) {
-        // This condition is our validation rule. You can also change the value at this point.
-        return promptContext.recognized.succeeded && promptContext.recognized.value > 0 && promptContext.recognized.value < 150;
     }
 }
 
