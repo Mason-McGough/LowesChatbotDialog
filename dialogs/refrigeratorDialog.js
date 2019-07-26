@@ -93,6 +93,7 @@ class RefrigeratorDialog extends ComponentDialog {
         }
 
         const list = Object.keys(this.specHistory);
+        this.availableOptions = this.availableOptions.filter(item => item !== list[list.length - 1]);
 
         let message = '';
         if (list.length === 0) {
@@ -106,7 +107,6 @@ class RefrigeratorDialog extends ComponentDialog {
             message = `Great choice! What else matters to you?`;
         }
 
-        this.availableOptions = this.availableOptions.filter(item => item !== list[list.length - 1]);
         return await step.prompt(CHOICE_PROMPT, {
             prompt: message,
             retryPrompt: 'Please choose an option from the list.',
@@ -151,8 +151,14 @@ class RefrigeratorDialog extends ComponentDialog {
         if (!this.done) {
             list.push(this.previousSpec);
         }
-
-        if (this.done || list.length >= this.maxIterations) {
+        
+        if (list.length === this.specsOptions.length) {
+            step.context.sendActivity({
+                text: 'Looks like I am out of questions! I will go ahead and find a product for you.'
+            });
+            this.done = true;
+            return await this.endStep(step);
+        } else if (this.done || list.length >= this.maxIterations) {
             await step.context.sendActivities([
                 { type: 'typing' },
                 { type: 'delay', value: 2500 }
@@ -195,7 +201,7 @@ class RefrigeratorDialog extends ComponentDialog {
 
         console.log(this.specHistory);
         if (this.specsFilterer.selectedProducts.length > 0) {
-            var selectedProduct = this.specsFilterer.selectedProducts[0];
+            var selectedProduct = await this.randomSampleProduct();
             var myCard = this.createACard(selectedProduct);
             step.context.sendActivity({
                 text: 'Thanks for coming! Here is your recommended refrigerator:',
@@ -250,6 +256,11 @@ class RefrigeratorDialog extends ComponentDialog {
             ],
             "$schema": "http://adaptivecards.io/schemas/adaptive-card.json"
         }
+    }
+
+    async randomSampleProduct() {
+        var randIdx = Math.floor(Math.random() * this.specsFilterer.selectedProducts.length);
+        return this.specsFilterer.selectedProducts[randIdx];
     }
 
     async priceStep(step) {
