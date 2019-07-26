@@ -97,7 +97,7 @@ class RefrigeratorDialog extends ComponentDialog {
 
         let message = '';
         if (list.length === 0) {
-            message = `Great! Finding the right refrigerator can be difficult. I can help with that.
+            message = `Finding the right refrigerator can be difficult. I can help with that.
             \r\n Pick a feature below that matters to you and I'll ask you a few questions to find the perfect fridge for you.`;
         } else {
             await step.context.sendActivities([
@@ -147,12 +147,20 @@ class RefrigeratorDialog extends ComponentDialog {
         const choice = step.result;
 
         this.specHistory[this.previousSpec] = choice.value;
+        this.specsFilterer.filterSpecs(this.specHistory);
+        console.log(`Found ${this.specsFilterer.selectedProducts.length} products.`);
         
         if (!this.done) {
             list.push(this.previousSpec);
         }
         
-        if (list.length === this.specsOptions.length) {
+        if (this.specsFilterer.selectedProducts.length === 0) {
+            step.context.sendActivity({
+                text: 'I\'m sorry, but no products matched your query. Let\'s start over.'
+            });
+            this.reset();
+            return await step.replaceDialog(REFRIGERATOR_DIALOG, []);
+        } else if (list.length === this.specsOptions.length) {
             step.context.sendActivity({
                 text: 'Looks like I am out of questions! I will go ahead and find a product for you.'
             });
@@ -189,10 +197,8 @@ class RefrigeratorDialog extends ComponentDialog {
     }
 
     async endStep(step) {
-        this.specsFilterer.filterSpecs(this.specHistory);
-
         await step.context.sendActivities([
-            {  type: 'typing' },
+            { type: 'typing' },
             { type: 'delay', value: 500 },
             { type: 'message', text: 'Beep boop... now finding your perfect frigid friend...' },
             { type: 'typing' },

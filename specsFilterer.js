@@ -19,8 +19,6 @@ class SpecsFilterer {
         }
     
         var filteredProducts = Array.from(uniqueIndices, i => this.products[i]);
-
-        console.log(`Found ${filteredProducts.length} products.`);
         this.selectedProducts = filteredProducts;
     }
 
