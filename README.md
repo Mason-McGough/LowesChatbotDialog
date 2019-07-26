@@ -20,6 +20,13 @@ On Ubuntu, this is easy with `apt`:
 sudo apt-get install nodejs npm
 ```
 
+Note that the Microsoft Bot Framework requires Node.js v10.x or greater. If the package manager installs an older version:
+
+```bash
+curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+sudo apt-get install -y nodejs
+```
+
 ### Windows
 
 On Windows, [download and install NodeJS](https://nodejs.org/en/download/) from the website.
